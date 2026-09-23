@@ -1,17 +1,42 @@
 # Implementation Notes
 
-> Status: skeleton (Phase 0). Filled in as phases 1–6 land.
+> Status: Phase 1 landed (LLM abstraction + structured triage, `POST /triage`).
+> Phases 2–6 still planned.
 
 ## Phase Tracker
 
 | Phase | Scope | Key files | Status |
 |---|---|---|---|
-| 1 | LLM abstraction, structured triage output | `llm/*.py`, `backend/app/api/routes/triage.py` | planned |
+| 0 | Repo structure + docs skeleton | — | ✅ |
+| 1 | LLM abstraction, structured triage output | `llm/*.py`, `backend/app/services/triage.py`, `backend/app/api/routes/triage.py` | ✅ |
 | 2 | RAG ingestion + retrieval, knowledge seed | `rag/*.py` | planned |
 | 3 | Agent loop, tools, tool registry | `agent/*.py` | planned |
 | 4 | Security controls + audit | `security/*.py`, `backend/app/core/*` | planned |
 | 5 | MCP server | `mcp-server/*.py` | planned |
 | 6 | Jira integration + evaluation | `integrations/*.py`, `evaluation/*.py` | planned |
+
+## Phase 1 — Notable Decisions
+
+- **One provider interface, four providers.** `openai`, `anthropic`, `local`
+  (any OpenAI-compatible server: LM Studio / Ollama / vLLM) and `mock` (offline,
+  deterministic). Everything above `llm/` is provider-agnostic.
+- **Local-first is a real option.** A Qwen model served by LM Studio on
+  `http://localhost:1234/v1` runs the exact same triage pipeline as a hosted
+  model — useful for private/offline development and for demos without keys.
+- **Two source roots: the app in `backend/app`, the domain packages in the root.**
+  pytest sees both via `pythonpath` in `pyproject.toml`, but uvicorn's console
+  script only honours `--app-dir`, so a bare `uvicorn app.main:app --app-dir
+  backend` cannot import `llm`. `scripts/serve.py` bootstraps both paths and
+  `chdir`s to the project root (so `.env` is found) before starting uvicorn.
+- **Structured output via prompt + Pydantic, not `response_format`.** The JSON
+  schema is embedded in the prompt and the reply validated with `model_validate`;
+  one retry with a correction prompt handles malformed output. Portable across
+  providers, including small local models.
+- **Security controls are deterministic.** Scanner output is capped and framed,
+  prompt-injection detection sets `injection_flagged` (the model's value is
+  overwritten), and secrets in model output are redacted post-validation.
+- **SDK-free testability.** Provider SDKs are imported lazily and clients are
+  injectable, so the whole suite runs offline.
 
 ## Conventions
 

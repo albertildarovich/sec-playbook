@@ -21,10 +21,19 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://ai_security:ai_security_dev@localhost:5432/ai_security"
 
     # --- LLM providers ---
+    # llm_provider: openai | anthropic | local | mock
+    #   local -> any OpenAI-compatible server on this machine (LM Studio, Ollama, vLLM)
+    #   mock  -> deterministic offline provider (no API key; tests and demos)
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
-    llm_provider: str = "openai"  # openai | anthropic | local
+    llm_provider: str = "openai"
     llm_model: str = "gpt-4o-mini"
+    # Base URL for OpenAI-compatible endpoints. LM Studio default is
+    # http://localhost:1234/v1 — set it to use a local model.
+    llm_base_url: str | None = None
+    # API key for OpenAI-compatible endpoints. Local servers ignore it, so any
+    # non-empty placeholder works (see `llm.local.LocalProvider`).
+    llm_api_key: str | None = None
 
     # --- Jira integration ---
     jira_url: str | None = None

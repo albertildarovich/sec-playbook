@@ -21,7 +21,7 @@ A production-oriented **AI Security Assistant** for vulnerability management:
 | Phase | Deliverable | Status |
 |---|---|---|
 | 0 | Repo structure + docs skeleton | ✅ done |
-| 1 | LLM abstraction + triage API | planned |
+| 1 | LLM abstraction + triage API | ✅ done |
 | 2 | RAG knowledge base | planned |
 | 3 | Security agent + tools | planned |
 | 4 | Security hardening (injection, RBAC, redaction, audit) | planned |
